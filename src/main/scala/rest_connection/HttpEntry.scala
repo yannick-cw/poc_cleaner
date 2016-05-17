@@ -36,7 +36,7 @@ trait Service extends Protocols with SprayJsonSupport {
 
         onComplete(futureRes) {
           case Success(cleaned: CleanedText) =>
-            complete(cleaned.toJson.prettyPrint)
+            complete(cleaned.toJson)
           case Failure(ex) => complete("error")
         }
       }
