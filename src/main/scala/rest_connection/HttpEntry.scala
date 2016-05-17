@@ -3,6 +3,7 @@ package rest_connection
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import cleaning.CleanActor
@@ -31,13 +32,15 @@ trait Service extends Protocols with SprayJsonSupport {
   val cleanDoc = path("clean") {
       (post & entity(as[RawText])) { rawText =>
 
-        implicit val timeout = Timeout(25.seconds)
+        implicit val timeout = Timeout(2.seconds)
         val futureRes = cleanActor ? rawText
 
         onComplete(futureRes) {
           case Success(cleaned: CleanedText) =>
             complete(cleaned.toJson)
-          case Failure(ex) => complete("error")
+          case Failure(ex) =>
+            println("!!!!!!!!COMPLETED WITH BADREQUEST!!!!!!!!!!")
+            complete(StatusCodes.BadRequest -> "Something went wrong while cleaning, whups!")
         }
       }
     }
