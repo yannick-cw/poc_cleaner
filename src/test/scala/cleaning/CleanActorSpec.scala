@@ -14,11 +14,11 @@ class CleanActorSpec extends TestKit(ActorSystem("testSys"))
 
 
   "CleanActor" must {
-    "return a CleanedMessage with the same text as the input text" in {
+    "return string with stems of words of inputstring" in {
       val cleanActor = system.actorOf(CleanActor.props)
 
-      cleanActor ! RawText("Hallo")
-      expectMsg(CleanedText("Hallo"))
+      cleanActor ! RawText(" darping derpIng      fucking hugging            killing")
+      expectMsg(CleanedText("darp derp fuck hug kill"))
     }
   }
 }
