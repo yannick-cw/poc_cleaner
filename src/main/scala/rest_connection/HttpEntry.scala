@@ -1,6 +1,7 @@
 package rest_connection
 
 import akka.actor.{ActorRef, ActorSystem}
+import akka.event.{Logging, LoggingAdapter}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
@@ -28,8 +29,10 @@ trait Service extends Protocols with SprayJsonSupport {
   implicit val system: ActorSystem
   implicit val materializer: ActorMaterializer
   val cleanActor: ActorRef
+  val logger: LoggingAdapter
 
   val cleanDoc = path("clean") {
+    logRequestResult("cleaner") {
       (post & entity(as[RawText])) { rawText =>
 
         implicit val timeout = Timeout(2.seconds)
@@ -44,12 +47,14 @@ trait Service extends Protocols with SprayJsonSupport {
         }
       }
     }
+  }
 }
 
 
 object AkkaHttpMicroservice extends App with Service {
   implicit val system = ActorSystem("cleaner-system")
   implicit val materializer = ActorMaterializer()
+  val logger = Logging(system, getClass)
 
   val cleanActor: ActorRef = system.actorOf(CleanActor.props, CleanActor.name)
 
