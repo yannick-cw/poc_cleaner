@@ -1,11 +1,11 @@
 package cleaning
 
+import java.lang.StringBuilder
+
 import akka.actor.{Actor, Props}
 import rest_connection.{CleanedText, RawText}
-import java.lang.StringBuilder
-import java.io._
-import scala._
-import scala.io.Source
+import utils.StopWords
+
 /**
   * Created by yannick on 14.05.16.
   */
@@ -17,15 +17,13 @@ object CleanActor {
 class CleanActor extends Actor {
 
   def receive: Receive = {
-    case RawText(text) => sender ! CleanedText(stem(text))
-  }
+    case RawText(text) =>
+      val lowerCase = text.toLowerCase.trim
+      val withoutSpecialChars = lowerCase.replaceAll("[^a-z0-9 ]", " ")
+      val withoutStopwords = withoutSpecialChars.split(" +").filterNot(word => StopWords.stopWords.contains(word))
+      val stemmed = withoutStopwords.map(word => step_5(step_4(step_3(step_2(step_1(word)))))).toList
 
-  def stem(sentence: String): String = {
-    //toDO: remove stopwords
-    var tmpArr= sentence.replaceAll("[^A-Za-z0-9 ]","").toLowerCase().trim().split(" +").toList
-
-    val result: List[String] = tmpArr.map(word => step_5(step_4(step_3(step_2(step_1(word))))))
-    result.reduce(_ + " " + _)
+      sender ! CleanedText(stemmed)
   }
 
   def step_1(str: String): String = step_1_c(step_1_b(step_1_a(str)))

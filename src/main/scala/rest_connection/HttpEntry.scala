@@ -17,7 +17,7 @@ import scala.concurrent.duration._
 
 
 case class RawText(text: String)
-case class CleanedText(cleanedText: String)
+case class CleanedText(cleanedText: List[String])
 
 trait Protocols extends DefaultJsonProtocol {
   implicit val rawTextFormat = jsonFormat1(RawText.apply)

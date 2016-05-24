@@ -1,4 +1,4 @@
-package util
+package utils
 
 import akka.testkit.TestKit
 import org.scalatest.{BeforeAndAfterAll, Suite}

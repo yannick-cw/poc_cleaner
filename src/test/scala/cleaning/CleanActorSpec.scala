@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestKit}
 import org.scalatest.{MustMatchers, WordSpecLike}
 import rest_connection.{CleanedText, RawText}
-import util.StopSystemAfterAll
+import utils.StopSystemAfterAll
 
 class CleanActorSpec extends TestKit(ActorSystem("testSys"))
   with WordSpecLike
@@ -18,7 +18,7 @@ class CleanActorSpec extends TestKit(ActorSystem("testSys"))
       val cleanActor = system.actorOf(CleanActor.props)
 
       cleanActor ! RawText(" darping derpIng      fucking hugging            killing")
-      expectMsg(CleanedText("darp derp fuck hug kill"))
+      expectMsg(CleanedText(List("darp", "derp", "fuck", "hug", "kill")))
     }
   }
 }
