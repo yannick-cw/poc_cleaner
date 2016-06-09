@@ -21,7 +21,7 @@ class CleanActor extends Actor {
       val lowerCase = text.toLowerCase.trim
       val withoutSpecialChars = lowerCase.replaceAll("[^a-z0-9 ]", " ")
       val withoutStopwords = withoutSpecialChars.split(" +").filterNot(word => StopWords.stopWords.contains(word))
-      val stemmed = withoutStopwords.map(word => step_5(step_4(step_3(step_2(step_1(word)))))).toList
+      val stemmed = withoutStopwords.map(word => if(word.length < 3){word}else{step_5(step_4(step_3(step_2(step_1(word)))))}).toList
 
       sender ! CleanedText(stemmed)
   }
