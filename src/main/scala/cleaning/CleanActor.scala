@@ -18,12 +18,15 @@ class CleanActor extends Actor {
 
   def receive: Receive = {
     case RawText(text) =>
-      val lowerCase = text.toLowerCase.trim
-      val withoutSpecialChars = lowerCase.replaceAll("[^a-z0-9 ]", " ")
-      val withoutStopwords = withoutSpecialChars.split(" +").filterNot(word => StopWords.stopWords.contains(word))
-      val stemmed = withoutStopwords.map(word => if(word.length < 3){word}else{step_5(step_4(step_3(step_2(step_1(word)))))}).toList
+      val stemmedText = text.toLowerCase.trim
+        .replaceAll("""\\n""", "")
+        .replaceAll("[^a-z ]", " ")
+        .split(" +").filterNot(word => StopWords.stopWords.contains(word))
+        .filter(word => word.length <= 20 && word.length >= 3)
+        .map(word => step_5(step_4(step_3(step_2(step_1(word))))))
+        .mkString(" ")
 
-      sender ! CleanedText(stemmed)
+      sender ! CleanedText(stemmedText)
   }
 
   def step_1(str: String): String = step_1_c(step_1_b(step_1_a(str)))
