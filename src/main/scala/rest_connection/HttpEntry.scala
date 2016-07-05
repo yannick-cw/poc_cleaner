@@ -19,10 +19,15 @@ import scala.concurrent.duration._
 
 case class RawText(text: String)
 case class CleanedText(cleanedText: String)
+case class CleanedBulk(cleanedText: List[String])
+case class BulkRaw(text: List[String])
+
 
 trait Protocols extends DefaultJsonProtocol {
   implicit val rawTextFormat = jsonFormat1(RawText.apply)
   implicit val cleanTextFormat = jsonFormat1(CleanedText.apply)
+  implicit val bulkRawFormat = jsonFormat1(BulkRaw.apply)
+  implicit val cleanedBulkFormat = jsonFormat1(CleanedBulk.apply)
 }
 
 trait Service extends Protocols with SprayJsonSupport {
@@ -47,7 +52,24 @@ trait Service extends Protocols with SprayJsonSupport {
         }
       }
     }
-  }
+  } ~
+    path("cleanBulk") {
+      logRequestResult("bulk clean") {
+        (post & entity(as[BulkRaw])) { bulkRaw =>
+
+          implicit val timeout = Timeout(2.seconds)
+          val futureRes = cleanActor ? bulkRaw
+
+          onComplete(futureRes) {
+            case Success(cleaned: CleanedBulk) =>
+              complete(cleaned.toJson)
+            case Failure(ex) =>
+              println("!!!!!!!!COMPLETED WITH BADREQUEST!!!!!!!!!!")
+              complete(StatusCodes.BadRequest -> "Something went wrong while cleaning, whups!")
+          }
+        }
+      }
+    }
 }
 
 

@@ -3,7 +3,7 @@ package cleaning
 import java.lang.StringBuilder
 
 import akka.actor.{Actor, Props}
-import rest_connection.{CleanedText, RawText}
+import rest_connection.{BulkRaw, CleanedBulk, CleanedText, RawText}
 import utils.StopWords
 
 /**
@@ -16,17 +16,25 @@ object CleanActor {
 
 class CleanActor extends Actor {
 
+  def stemmText(text: String): String = {
+    val stemmedText = text.toLowerCase.trim
+      .replaceAll("""\\n""", "")
+      .replaceAll("[^a-z ]", " ")
+      .split(" +").filterNot(word => StopWords.stopWords.contains(word))
+      .filter(word => word.length <= 20 && word.length >= 3)
+      .map(word => step_5(step_4(step_3(step_2(step_1(word))))))
+      .mkString(" ")
+    stemmedText
+  }
+
   def receive: Receive = {
     case RawText(text) =>
-      val stemmedText = text.toLowerCase.trim
-        .replaceAll("""\\n""", "")
-        .replaceAll("[^a-z ]", " ")
-        .split(" +").filterNot(word => StopWords.stopWords.contains(word))
-        .filter(word => word.length <= 20 && word.length >= 3)
-        .map(word => step_5(step_4(step_3(step_2(step_1(word))))))
-        .mkString(" ")
-
+      val stemmedText: String = stemmText(text)
       sender ! CleanedText(stemmedText)
+
+    case BulkRaw(texts) =>
+      val stemmedTexts = texts.map(stemmText)
+      sender ! CleanedBulk(stemmedTexts)
   }
 
   def step_1(str: String): String = step_1_c(step_1_b(step_1_a(str)))
