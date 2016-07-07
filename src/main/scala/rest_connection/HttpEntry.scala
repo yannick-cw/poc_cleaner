@@ -37,7 +37,7 @@ trait Service extends Protocols with SprayJsonSupport {
   val logger: LoggingAdapter
 
   val cleanDoc = path("clean") {
-    logRequestResult("cleaner") {
+    logResult("cleaner") {
       (post & entity(as[RawText])) { rawText =>
 
         implicit val timeout = Timeout(2.seconds)
@@ -54,7 +54,7 @@ trait Service extends Protocols with SprayJsonSupport {
     }
   } ~
     path("cleanBulk") {
-      logRequestResult("bulk clean") {
+      logResult("bulk clean") {
         (post & entity(as[BulkRaw])) { bulkRaw =>
 
           implicit val timeout = Timeout(2.seconds)
